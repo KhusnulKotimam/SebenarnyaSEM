@@ -1,5 +1,7 @@
 <?php
 
+// try commit
+
 namespace App\Http\Controllers;
 
 use App\Models\Inquiry;

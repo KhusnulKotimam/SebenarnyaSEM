@@ -1,13 +1,15 @@
 <?php
+
 namespace App\Models;
+
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
@@ -15,6 +17,7 @@ class User extends Authenticatable
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
+
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
@@ -30,7 +33,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'role',
-        
+
     ];
 
     /**
@@ -69,7 +72,7 @@ class User extends Authenticatable
 
     public function updatePassword($currentPassword, $newPassword)
     {
-        if (!Hash::check($currentPassword, $this->password)) {
+        if (! Hash::check($currentPassword, $this->password)) {
             return false;
         }
 
@@ -91,7 +94,7 @@ class User extends Authenticatable
         $user = auth()->user(); // This should point to the correct User model
 
         // Check current password
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Current password is incorrect.']);
         }
 
@@ -101,6 +104,7 @@ class User extends Authenticatable
 
         return back()->with('success', 'Password updated successfully.');
     }
+
     // Add relationships
     public function PublicUser()
     {
@@ -133,4 +137,3 @@ class User extends Authenticatable
         return $this->role === 'Agency';
     }
 }
-

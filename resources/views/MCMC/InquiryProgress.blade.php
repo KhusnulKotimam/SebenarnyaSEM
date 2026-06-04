@@ -24,8 +24,24 @@
                 <div class="mt-4">
                     <h4 class="font-semibold text-indigo-600 mb-2">Progress Updates:</h4>
 
-                    @forelse($inquiry->progressUpdates as $progress)
-                        <div class="bg-gray-50 border-l-4 border-indigo-400 p-4 mb-3 rounded">
+                    <div class="relative pl-8 pb-6 border-l-2 border-indigo-300">
+
+                        <div class="absolute -left-2 top-2 w-4 h-4 bg-indigo-500 rounded-full"></div>
+                        <h5 class="font-bold text-indigo-700">
+                            {{ $progress->ProgressStatus }}
+                        </h5>
+
+                        <p class="text-gray-700">
+                            {{ $progress->ProgressDescription }}
+                        </p>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ $progress->ReviewingOfficer }}
+                            •
+                            {{ $progress->created_at->format('d M Y h:i A') }}
+                        </p>
+                    </div>
+
                             <p class="text-sm"><strong>Status:</strong> {{ $progress->ProgressStatus }}</p>
                             <p class="text-sm text-gray-700"><strong>Comment:</strong> {{ $progress->ProgressDescription ?? '-' }}</p>
                             <p class="text-xs text-gray-500 mt-1">

@@ -18,7 +18,7 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('afiq1234'),
                 'role' => 'PublicUser',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'id' => 13,
@@ -27,7 +27,7 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('afiq1234'),
                 'role' => 'MCMC',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'id' => 14,
@@ -36,7 +36,7 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'Agency',
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ],
             [
                 'id' => 15,
@@ -45,8 +45,8 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('khusnul1234'),
                 'role' => 'PublicUser',
                 'created_at' => now(),
-                'updated_at' => now()
-            ]
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

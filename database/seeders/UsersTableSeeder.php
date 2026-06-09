@@ -47,6 +47,15 @@ class UsersTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 16,
+                'name' => 'MCMC Admin 2',
+                'email' => 'timbpressispa@gmail.com',
+                'password' => Hash::make('afiq1234'),
+                'role' => 'MCMC',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

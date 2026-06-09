@@ -245,17 +245,17 @@ class AgencyController extends Controller
             'updated_at' => now(),
         ]);
 
-        $mcmc = User::where('role', 'MCMC')->first();
+        $mcmcUsers = User::where('role', 'MCMC')->get();
 
-        if ($mcmc) {
-            Mail::to($mcmc->email)
-                ->send(new InquiryProgressMail($progressUpdate));
+        foreach ($mcmcUsers as $mcmc) {
+            Mail::to($mcmc->email)->send(new InquiryProgressMail($progressUpdate, 'mcmc'));
         }
 
         // Send email to public user
         $publicUserEmail = $inquiry->publicUser->user->email ?? null;
+
         if ($publicUserEmail) {
-            Mail::to($publicUserEmail)->send(new InquiryProgressMail($progressUpdate));
+            Mail::to($publicUserEmail)->send(new InquiryProgressMail($progressUpdate, 'public'));
         }
 
         return redirect()->route('Agency.InquiryList', $user_id)

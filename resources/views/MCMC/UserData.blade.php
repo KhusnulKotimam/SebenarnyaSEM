@@ -10,6 +10,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div class="mb-6 px-4 py-3 rounded bg-red-100 text-red-800 font-semibold shadow">
+               {{ session('error') }}
+             </div>
+        @endif
+        
         <div class="mb-6 text-right">
             <a href="{{ route('MCMC.RegisterUser', ['user_id' => Auth::id()]) }}"
                 class="inline-block px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-700">
@@ -46,9 +52,30 @@
                             {{ $user->created_at ? $user->created_at->format('d M Y') : 'N/A' }}
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <a href="{{ route('MCMC.ViewUserActivity', ['user_id' => Auth::id(), 'target_user_id' => $user->id]) }}"
-                               class="inline-block px-4 py-2 bg-indigo-500 text-white font-bold rounded hover:bg-indigo-700">View Logs</a>
-                        </td>
+
+    <a href="{{ route('MCMC.ViewUserActivity', ['user_id' => Auth::id(), 'target_user_id' => $user->id]) }}"
+       class="inline-block px-4 py-2 bg-indigo-500 text-white font-bold rounded hover:bg-indigo-700">
+       View Logs
+    </a>
+
+    @if($user->id != Auth::id())
+    <form action="{{ route('MCMC.DeleteUser', ['user_id' => Auth::id(), 'target_user_id' => $user->id]) }}"
+          method="POST"
+          class="inline-block"
+          onsubmit="return confirm('Are you sure you want to delete this user?');">
+
+        @csrf
+        @method('DELETE')
+
+        <button type="submit"
+            class="inline-block px-4 py-2 bg-red-500 text-white font-bold rounded hover:bg-red-700">
+            Delete
+        </button>
+
+    </form>
+    @endif
+
+</td>
                     </tr>
                     @empty
                     <tr>

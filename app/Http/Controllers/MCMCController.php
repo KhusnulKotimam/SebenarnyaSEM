@@ -56,7 +56,7 @@ class MCMCController extends Controller
                     ->orWhere('InquiryStatus', 'Rejected') // ✅ Include rejected
                     ->orWhere('InquiryStatus', 'Reviewed');
             })
-            ->whereNull('Agency_id') // ✅ Ensure it's not currently assigned
+            // ->whereNull('Agency_id') // ✅ Ensure it's not currently assigned
             ->orderBy('created_at', 'desc')
             ->get();
 

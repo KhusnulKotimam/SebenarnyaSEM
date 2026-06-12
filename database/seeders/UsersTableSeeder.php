@@ -46,7 +46,25 @@ class UsersTableSeeder extends Seeder
                 'role' => 'PublicUser',
                 'created_at' => now(),
                 'updated_at' => now()
-            ]
+            ],
+            [
+                'id' => 16,
+                'name' => 'MCMC Admin',
+                'email' => 'nabilah32@gmail.com',
+                'password' => Hash::make('nabilah0532'),
+                'role' => 'MCMC',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'id' => 17,
+                'name' => 'PDRM Agency',
+                'email' => 'pdrm@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'Agency',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
         ]);
     }
 }

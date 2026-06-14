@@ -1,21 +1,19 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\PublicUser;
 use App\Models\Inquiry;
-use App\Models\User;
-use App\Models\PublicUserInquiry;
-use Illuminate\Support\Facades\Hash;
-
 
 class PublicUserController extends Controller
 {
-
     public function showProfile($user_id)
     {
         $this->authorizeUser($user_id);
+
         $user = auth()->user();
+
         return view('PublicUser.profile', compact('user'));
     }
 
@@ -31,6 +29,7 @@ class PublicUserController extends Controller
 
         $user = auth()->user();
         $user->name = $request->name;
+
         if ($user->publicUser) {
             $user->publicUser->name = $request->name;
             $user->publicUser->phone = $request->phone;
@@ -69,74 +68,99 @@ class PublicUserController extends Controller
     private function authorizeUser($user_id)
     {
         if (auth()->id() != $user_id || !auth()->user()->isPublicUser()) {
-            abort(403);
+            abort(403, 'Unauthorized action.');
         }
     }
 
     public function storeInquiry(Request $request, $user_id)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string',
-            'source' => 'required|string|max:255',
+        $this->authorizeUser($user_id);
+
+        $validated = $request->validate([
+            'title' => 'required|string|min:10|max:255',
+            'content' => 'required|string|min:20',
+            'source' => 'required|string|min:3|max:255',
             'proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+        ], [
+            'title.required' => 'Inquiry title is required.',
+            'title.min' => 'Inquiry title must be at least 10 characters.',
+            'title.max' => 'Inquiry title must not exceed 255 characters.',
+
+            'content.required' => 'Inquiry content is required.',
+            'content.min' => 'Inquiry content must be at least 20 characters.',
+
+            'source.required' => 'Source of information is required.',
+            'source.min' => 'Source must be at least 3 characters.',
+            'source.max' => 'Source must not exceed 255 characters.',
+
+            'proof.file' => 'Proof must be a valid file.',
+            'proof.mimes' => 'Proof must be a file of type JPG, JPEG, PNG, PDF, DOC, or DOCX.',
+            'proof.max' => 'Proof file must not exceed 2MB.',
         ]);
 
         $attachmentPath = null;
+
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
+
             if ($file->isValid()) {
                 $attachmentPath = $file->store('attachments', 'public');
-                \Log::info('File uploaded to: ' . $attachmentPath);
             } else {
-                \Log::error('Uploaded file is not valid.');
+                return back()
+                    ->withErrors(['proof' => 'Uploaded attachment is invalid.'])
+                    ->withInput();
             }
         }
 
-        $user = Auth::user();
+        $user = auth()->user();
+
         $publicUser = PublicUser::where('user_id', $user->id)->first();
+
+        if (! $publicUser) {
+            abort(404, 'Public user not found.');
+        }
+
         Inquiry::create([
             'PublicUser_id' => $publicUser->id,
-            'NewsTitle' => $request->title,
-            'NewsContent' => $request->content,
-            'NewsSource' => $request->source,
-            'InquiryDate' => now(),
+            'NewsTitle' => $validated['title'],
+            'NewsContent' => $validated['content'],
+            'NewsSource' => $validated['source'],
+            'InquiryDate' => now()->toDateString(),
             'InquiryStatus' => 'Pending',
             'attachment' => $attachmentPath,
         ]);
 
-        return redirect()->route('PublicUser.InquiryHistory', ['user_id' => $user_id])
+        return redirect()
+            ->route('PublicUser.InquiryHistory', ['user_id' => $user_id])
             ->with('success', 'Inquiry submitted successfully!');
     }
-    //display the inquiry history for a public user
+
     public function inquiryHistory($user_id)
     {
-        // Check if user is authenticated and authorized
-        $user = Auth::user();
+        $user = auth()->user();
+
         if (!$user || $user->id != $user_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Get the public user record
         $publicUser = PublicUser::where('user_id', $user_id)->first();
+
         if (!$publicUser) {
             abort(404, 'Public user not found.');
         }
 
-        // Get all inquiries for this public user
         $inquiries = Inquiry::with(['agency', 'assignment'])
-                        ->where('PublicUser_id', $publicUser->id)
-                        ->orderBy('InquiryDate', 'desc')
-                        ->get();
+            ->where('PublicUser_id', $publicUser->id)
+            ->orderBy('InquiryDate', 'desc')
+            ->get();
 
         return view('PublicUser.InquiryHistory', [
             'inquiries' => $inquiries,
             'user' => $user,
-            'publicUser' => $publicUser
+            'publicUser' => $publicUser,
         ]);
     }
 
-    // View a specific inquiry
     public function viewInquiry($user_id, $inquiry_id)
     {
         $inquiry = Inquiry::findByUser($inquiry_id, $user_id);
@@ -147,79 +171,82 @@ class PublicUserController extends Controller
 
         return view('PublicUser.InquiryDetail', compact('inquiry'));
     }
-    
 
-    // Display the dashboard for a public user
-public function dashboard($user_id)
-{
-    $user = auth()->user();
+    public function dashboard($user_id)
+    {
+        $user = auth()->user();
 
-    if (!$user || $user->id != $user_id || !$user->isPublicUser()) {
-        abort(403, 'Unauthorized action.');
+        if (!$user || $user->id != $user_id || !$user->isPublicUser()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $publicUser = PublicUser::where('user_id', $user->id)->first();
+
+        if (!$publicUser) {
+            abort(404, 'Public user not found.');
+        }
+
+        $total = Inquiry::where('PublicUser_id', $publicUser->id)->count();
+
+        $pending = Inquiry::where('PublicUser_id', $publicUser->id)
+            ->where('InquiryStatus', 'Pending')
+            ->count();
+
+        $inProgress = Inquiry::where('PublicUser_id', $publicUser->id)
+            ->where('InquiryStatus', 'In Progress')
+            ->count();
+
+        $resolved = Inquiry::where('PublicUser_id', $publicUser->id)
+            ->where('InquiryStatus', 'Resolved')
+            ->count();
+
+        $recent = Inquiry::where('PublicUser_id', $publicUser->id)
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('PublicUser.dashboard', compact('total', 'pending', 'inProgress', 'resolved', 'recent'));
     }
 
-    $publicUser = PublicUser::where('user_id', $user->id)->first();
+    public function publicInquiry($user_id)
+    {
+        if (auth()->id() != $user_id || !auth()->user()->isPublicUser()) {
+            abort(403, 'Unauthorized');
+        }
 
-    if (!$publicUser) {
-        abort(404, 'Public user not found.');
+        $inquiries = Inquiry::where('InquiryStatus', 'Resolved')
+            ->whereHas('progress', function ($query) {
+                $query->whereIn('ProgressStatus', ['Verified as True', 'Identified as Fake']);
+            })
+            ->with(['progress' => function ($query) {
+                $query->latest()->limit(1);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('PublicUser.PublicInquiry', compact('inquiries'));
     }
 
-    $total = Inquiry::where('PublicUser_id', $publicUser->id)->count();
-    $pending = Inquiry::where('PublicUser_id', $publicUser->id)->where('InquiryStatus', 'Pending')->count();
-    $inProgress = Inquiry::where('PublicUser_id', $publicUser->id)->where('InquiryStatus', 'In Progress')->count();
-    $resolved = Inquiry::where('PublicUser_id', $publicUser->id)->where('InquiryStatus', 'Resolved')->count();
+    public function inquiryProgress(Request $request)
+    {
+        $user = auth()->user();
 
-    $recent = Inquiry::where('PublicUser_id', $publicUser->id)
-        ->latest()
-        ->take(5)
-        ->get();
+        $publicUser = PublicUser::where('user_id', $user->id)->firstOrFail();
 
-    return view('PublicUser.dashboard', compact('total', 'pending', 'inProgress', 'resolved', 'recent'));
+        $query = Inquiry::with(['progressUpdates', 'agency.user'])
+            ->where('PublicUser_id', $publicUser->id);
+
+        if ($request->filled('search')) {
+            $query->where('NewsTitle', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('InquiryStatus', $request->status);
+        }
+
+        $inquiries = $query->orderBy('created_at', 'desc')->get();
+
+        return view('PublicUser.InquiryProgress', compact('inquiries'));
+    }
 }
 
-public function publicInquiry($user_id)
-{
-    if (auth()->id() != $user_id || !auth()->user()->isPublicUser()) {
-        abort(403, 'Unauthorized');
-    }
-
-    $inquiries = Inquiry::where('InquiryStatus', 'Resolved')
-        ->whereHas('progress', function ($query) {
-            $query->whereIn('ProgressStatus', ['Verified as True', 'Identified as Fake']);
-        })
-        ->with(['progress' => function ($q) {
-            $q->latest()->limit(1); // optionally get only latest
-        }])
-        ->orderBy('created_at', 'desc')
-        ->get();
-
-    return view('PublicUser.PublicInquiry', compact('inquiries'));
-}
-
-
-public function inquiryProgress(Request $request)
-{
-    $user = auth()->user();
-    $publicUser = PublicUser::where('user_id', $user->id)->firstOrFail();
-
-    $query = Inquiry::with(['progressUpdates', 'agency.user'])
-        ->where('PublicUser_id', $publicUser->id);
-
-    // Search by title
-    if ($request->filled('search')) {
-        $query->where('NewsTitle', 'like', '%' . $request->search . '%');
-    }
-
-    // Filter by status
-    if ($request->filled('status')) {
-        $query->where('InquiryStatus', $request->status);
-    }
-
-    $inquiries = $query->orderBy('created_at', 'desc')->get();
-
-    return view('PublicUser.InquiryProgress', compact('inquiries'));
-}
-
-
-
-    }

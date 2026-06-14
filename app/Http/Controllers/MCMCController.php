@@ -1,5 +1,7 @@
 <?php
 
+// try commit
+
 namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
@@ -148,31 +150,50 @@ class MCMCController extends Controller
                         ->with('success', 'Inquiry reviewed successfully.');
     }
 
-    public function UserData($user_id) {
+    public function UserData($user_id)
+    {
         $this->authorizeUser($user_id);
         $users = User::all();
+
         return view('MCMC.UserData', compact('users'));
+    }
+
+    public function deleteUser($user_id, $target_user_id)
+    {
+        $this->authorizeUser($user_id);
+
+        $user = User::findOrFail($target_user_id);
+
+        // Prevent MCMC from deleting own account
+        if ($user->id == auth()->id()) {
+            return redirect()->back()
+                ->with('error', 'You cannot delete your own account.');
+        }
+
+        // Delete related agency record first if the user is Agency
+        if ($user->role == 'Agency') {
+            Agency::where('user_id', $user->id)->delete();
+        }
+
+        $user->delete();
+
+        return redirect()
+            ->route('MCMC.UserData', ['user_id' => $user_id])
+            ->with('success', 'User deleted successfully.');
     }
 
     public function RegisterUser($user_id)
     {
         $this->authorizeUser($user_id);
-        return view('MCMC.RegisterUser'); // make sure this Blade file exists
+        return view('MCMC.RegisterUser');
     }
-    // public function ViewUserActivity($user_id, $target_user_id)
-    // {
-    //     $this->authorizeUser($user_id);
-    //     $user = User::findOrFail($target_user_id);
-    //     // Fetch activity logs or dummy data
-    //     return view('MCMC.UserActivity', compact('user'));
-    // }
+
     public function ViewUserActivity($user_id, $target_user_id)
     {
         $this->authorizeUser($user_id);
 
         $user = User::with(['PublicUser', 'MCMC', 'Agency'])->findOrFail($target_user_id);
 
-        // Activity logs (example: inquiries if user is PublicUser, assignments if Agency)
         $inquiries = $user->isPublicUser() ? $user->PublicUser->inquiries ?? [] : [];
         $assignments = $user->isAgency() ? $user->Agency->assignments ?? [] : [];
 

@@ -146,6 +146,8 @@ Route::prefix('MCMC/{user_id}')->name('MCMC.')->group(function () {
     // Reject Inquiry
     Route::put('/inquiry/{inquiry_id}/reject', [MCMCController::class, 'rejectInquiry'])->name('rejectInquiry');
 
+    Route::delete('/user-data/{target_user_id}', [MCMCController::class, 'deleteUser'])->name('DeleteUser');
+
     Route::get('/user-data', [MCMCController::class, 'UserData'])->name('UserData');
 
     Route::get('/user-activity/{target_user_id}', [MCMCController::class, 'ViewUserActivity'])->name('ViewUserActivity');

@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Mail;
 
+use App\Models\Progress;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Progress;
 
 class InquiryProgressMail extends Mailable
 {
@@ -12,14 +13,24 @@ class InquiryProgressMail extends Mailable
 
     public $progress;
 
-    public function __construct(Progress $progress)
+    public $recipientType;
+
+    public function __construct(Progress $progress, $recipientType = 'public')
     {
         $this->progress = $progress;
+        $this->recipientType = $recipientType;
     }
 
     public function build()
     {
-        return $this->subject('Your Inquiry Has Been Updated')
-                    ->view('emails.inquiry_progress');
+        $subject = $this->recipientType === 'mcmc'
+            ? 'Agency Has Updated Inquiry Progress'
+            : 'Your Inquiry Has Been Updated';
+
+        return $this->subject($subject)
+            ->view('emails.inquiry_progress')
+            ->with([
+                'recipientType' => $this->recipientType,
+            ]);
     }
 }

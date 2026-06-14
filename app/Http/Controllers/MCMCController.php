@@ -86,6 +86,17 @@ class MCMCController extends Controller
             $inquiry = Inquiry::findOrFail($request->inquiry_id);
             $agency = Agency::findOrFail($request->agency_id);
             
+            // ✅ IMPROVEMENT: Preventive check - prevent duplicate assignment
+            $duplicate = \App\Models\Assignment::where('Inquiry_id', $request->inquiry_id)
+                ->where('AssignmentStatus', 'Assigned')  // ← guna 'Assigned' sahaja, ikut DB anda
+                ->exists();
+
+            if ($duplicate) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'This inquiry has already been assigned and is currently active.');
+            }
+            
             // Use the model method to handle assignment
             $inquiry->assignTo($agency, $request->due_date, $request->comments);
 

@@ -47,6 +47,17 @@
                                 @elseif($inquiry->InquiryStatus == 'Reviewed')
                                 <span class="text-sm text-green-500">(Previously Reviewed)</span>
                             @endif
+
+                            {{-- IMPROVEMENT: Status badge for duplicate assignment warning --}}
+                            <span id="row_{{ $inquiry->id }}"
+                                class="status-badge inline-block text-xs font-bold px-2 py-1 rounded-full mt-1
+                                @if($inquiry->InquiryStatus == 'Assigned') bg-yellow-100 text-yellow-800
+                                @elseif($inquiry->InquiryStatus == 'Pending') bg-blue-100 text-blue-800
+                                @elseif($inquiry->InquiryStatus == 'Rejected') bg-red-100 text-red-800
+                                @else bg-gray-100 text-gray-600 @endif">
+                                {{ $inquiry->InquiryStatus }}
+                            </span>
+
                             <div class="text-gray-600 text-sm">{{ \Illuminate\Support\Str::limit($inquiry->NewsContent, 80) }}</div>
                         </td>
                         <td class="px-4 py-3 text-center text-gray-600">

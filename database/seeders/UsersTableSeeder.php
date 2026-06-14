@@ -45,7 +45,6 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('khusnul1234'),
                 'role' => 'PublicUser',
                 'created_at' => now(),
-<<<<<<< HEAD
                 'updated_at' => now()
             ],
             [
@@ -64,19 +63,16 @@ class UsersTableSeeder extends Seeder
                 'password' => Hash::make('password'),
                 'role' => 'Agency',
                 'created_at' => now(),
-                'updated_at' => now()
-=======
                 'updated_at' => now(),
             ],
             [
-                'id' => 16,
+                'id' => 18,
                 'name' => 'MCMC Admin 2',
                 'email' => 'timbpressispa@gmail.com',
                 'password' => Hash::make('afiq1234'),
                 'role' => 'MCMC',
                 'created_at' => now(),
                 'updated_at' => now(),
->>>>>>> 166a25068c7a561ace6de0c58664ae6b6e362d59
             ],
         ]);
     }

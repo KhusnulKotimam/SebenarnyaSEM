@@ -176,6 +176,25 @@ function openAssignmentModal(inquiryId) {
         return;
     }
 
+    // IMPROVEMENT: Warn MCMC before assigning an already-assigned inquiry
+    const row = document.getElementById('modal_inquiry_id');
+    const statusBadges = document.querySelectorAll('.status-badge');
+    let currentStatus = '';
+
+    document.querySelectorAll('tr').forEach(function(tr) {
+        const btn = tr.querySelector('button[onclick*="' + inquiryId + '"]');
+        if (btn) {
+            const badge = tr.querySelector('.status-badge');
+            if (badge) currentStatus = badge.innerText.trim();
+        }
+    });
+
+    if (currentStatus === 'Assigned') {
+        if (!confirm('This inquiry may already be assigned. Do you want to proceed?')) {
+            return;
+        }
+    }
+
     document.getElementById('modal_inquiry_id').value = inquiryId;
     document.getElementById('modal_agency_id').value = agencyId;
 

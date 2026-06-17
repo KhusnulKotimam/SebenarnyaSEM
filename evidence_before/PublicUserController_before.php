@@ -76,28 +76,6 @@ class PublicUserController extends Controller
     {
         $this->authorizeUser($user_id);
 
-        $validated = $request->validate([
-            'title' => 'required|string|min:10|max:255',
-            'content' => 'required|string|min:20',
-            'source' => 'required|string|min:3|max:255',
-            'proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
-        ], [
-            'title.required' => 'Inquiry title is required.',
-            'title.min' => 'Inquiry title must be at least 10 characters.',
-            'title.max' => 'Inquiry title must not exceed 255 characters.',
-
-            'content.required' => 'Inquiry content is required.',
-            'content.min' => 'Inquiry content must be at least 20 characters.',
-
-            'source.required' => 'Source of information is required.',
-            'source.min' => 'Source must be at least 3 characters.',
-            'source.max' => 'Source must not exceed 255 characters.',
-
-            'proof.file' => 'Proof must be a valid file.',
-            'proof.mimes' => 'Proof must be a file of type JPG, JPEG, PNG, PDF, DOC, or DOCX.',
-            'proof.max' => 'Proof file must not exceed 2MB.',
-        ]);
-
         $attachmentPath = null;
 
         if ($request->hasFile('proof')) {
@@ -105,10 +83,6 @@ class PublicUserController extends Controller
 
             if ($file->isValid()) {
                 $attachmentPath = $file->store('attachments', 'public');
-            } else {
-                return back()
-                    ->withErrors(['proof' => 'Uploaded attachment is invalid.'])
-                    ->withInput();
             }
         }
 
@@ -122,9 +96,9 @@ class PublicUserController extends Controller
 
         Inquiry::create([
             'PublicUser_id' => $publicUser->id,
-            'NewsTitle' => $validated['title'],
-            'NewsContent' => $validated['content'],
-            'NewsSource' => $validated['source'],
+            'NewsTitle' => $request->title ?? '',
+            'NewsContent' => $request->content ?? '',
+            'NewsSource' => $request->source ?? '',
             'InquiryDate' => now()->toDateString(),
             'InquiryStatus' => 'Pending',
             'attachment' => $attachmentPath,
@@ -249,4 +223,3 @@ class PublicUserController extends Controller
         return view('PublicUser.InquiryProgress', compact('inquiries'));
     }
 }
-

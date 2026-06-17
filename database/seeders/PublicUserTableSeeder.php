@@ -28,6 +28,24 @@ class PublicUserTableSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 8,
+                'user_id' => 19,
+                'name' => 'Hana Khawla',
+                'email' => 'just.elhana12@gmail.com',
+                'phone' => '0123456789',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 9,
+                'user_id' => 20,
+                'name' => 'Luth Hakimi',
+                'email' => 'dpcluqmansonata@gmail.com',
+                'phone' => '0123456789',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

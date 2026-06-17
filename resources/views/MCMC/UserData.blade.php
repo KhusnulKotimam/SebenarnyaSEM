@@ -14,8 +14,7 @@
             <div class="mb-6 px-4 py-3 rounded bg-red-100 text-red-800 font-semibold shadow">
                {{ session('error') }}
              </div>
-        @endif
-        
+    @endif
         <div class="mb-6 text-right">
             <a href="{{ route('MCMC.RegisterUser', ['user_id' => Auth::id()]) }}"
                 class="inline-block px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-700">
